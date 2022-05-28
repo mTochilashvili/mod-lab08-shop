@@ -39,11 +39,11 @@ int Client::GetCashboxTime() {
 }
 
 void Client::EnterQueue() {
-    tin = chrono::system_clock::now();
+    tin = std::chrono::system_clock::now();
 }
 
 void Client::ExitQueue() {
-    timeQueue = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now() - tin).count();
+    timeQueue = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tin).count();
 }
 
 void Client::ExitCashbox(int time) {
@@ -69,12 +69,12 @@ Shop::Shop(int cashboxCount, int requestRate, double servicespeed, int avgItems,
     queueLen = 0;
     countProc = 0;
 
-    cboxes = vector<Cashbox>();
-    queue = deque<Client *>();
+    cboxes = std::vector<Cashbox>();
+    queue = std::deque<Client *>();
 
     for (int i = 0; i < cashbox; i++) {
         cboxes.push_back(Cashbox());
-        cboxes[i].thrd = thread(&Shop::Start, this, i);
+        cboxes[i].thrd = std::thread(&Shop::Start, this, i);
     }
 }
 
@@ -93,14 +93,14 @@ void Shop::Start(int index) {
             queue.pop_front();
             mu.unlock();
             while (items > 0) {
-                this_thread::sleep_for(chrono::milliseconds(servicespeed));
+                std::this_thread::sleep_for(std::chrono::milliseconds(servicespeed));
                 items -= 1;
             }
-            cout << "Клиент с ID " << id << " обслужен." << endl;
+            std::cout << "Клиент с ID " << id << " обслужен." << std::endl;
         } else {
             cboxes[index].waitStat += 10;
             mu.unlock();
-            this_thread::sleep_for(chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
 }
@@ -108,7 +108,7 @@ void Shop::Start(int index) {
 std::string Shop::Modelling() {
     srand(time(0));
 
-    string out = "";
+    std::string out = "";
     int countClients = 0;
     std::vector<Client> clients;
 
@@ -120,7 +120,7 @@ std::string Shop::Modelling() {
 
     while (countClients < requestRate) {
         int time = rand() % 1000;
-        this_thread::sleep_for(std::chrono::milliseconds(time));
+        std::this_thread::sleep_for(std::chrono::milliseconds(time));
         mu.lock();
         avgQueueLen += queue.size();
         if (queue.size() < maxqueue) {
@@ -176,22 +176,22 @@ std::string Shop::Modelling() {
 
     out += "\n\nНакопленная статистика\n";
 
-    out += "\nОбслуженных покупателей: " + to_string(completedCount);
-    out += "\nНеобслуженных покупателей: " + to_string(rejectedCount);
-    out += "\nСредняя длина очереди: " + to_string(avgQueueLen);
-    out += "\nСреднее время нахождение покупателя в очереди + на кассе: " + to_string(avgTimeQueue) + " + " + to_string(avgTimeCashBox);
-    out += "\nСреднее время работы кассы: " + to_string(avgWork);
-    out += "\nСреднее время простоя кассы: " + to_string(avgWait);
+    out += "\nОбслуженных покупателей: " + std::to_string(completedCount);
+    out += "\nНеобслуженных покупателей: " + std::to_string(rejectedCount);
+    out += "\nСредняя длина очереди: " + std::to_string(avgQueueLen);
+    out += "\nСреднее время нахождение покупателя в очереди + на кассе: " + std::to_string(avgTimeQueue) + " + " + std::to_string(avgTimeCashBox);
+    out += "\nСреднее время работы кассы: " + std::to_string(avgWork);
+    out += "\nСреднее время простоя кассы: " + std::to_string(avgWait);
 
-    out += "\nВероятность отказа: " + to_string((double)rejectedCount / (double)requestRate);
-    out += "\nОтносительная пропускная способность магазина: " + to_string((double)completedCount / (double)requestRate);
-    out += "\nАбсолютная пропускная способность: " + to_string(lambda * (double)completedCount / (double)requestRate);
+    out += "\nВероятность отказа: " + std::to_string((double)rejectedCount / (double)requestRate);
+    out += "\nОтносительная пропускная способность магазина: " + std::to_string((double)completedCount / (double)requestRate);
+    out += "\nАбсолютная пропускная способность: " + std::to_string(lambda * (double)completedCount / (double)requestRate);
 
     out += "\n\nТеоретические данные\n";
 
-    out += "\nВероятность отказа: " + to_string(Prej);
-    out += "\nОтносительная пропускная способность: " + to_string(Q);
-    out += "\nАбсолютная пропускная способность: " + to_string(A);
+    out += "\nВероятность отказа: " + std::to_string(Prej);
+    out += "\nОтносительная пропускная способность: " + std::to_string(Q);
+    out += "\nАбсолютная пропускная способность: " + std::to_string(A);
 
     return out;
 }
